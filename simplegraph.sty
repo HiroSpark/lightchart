@@ -34,16 +34,16 @@
   \keys_set:nn  { sgraph }{ #3 }
   % colors
   \seq_set_split:NnV \l__sgraph_colors_seq { , } \l__sgraph_colors_tl
-  \seq_show:N \l__sgraph_colors_seq
 
   % <data> を prop にする
   \prop_set_from_keyval:Nn \l__sgraph_value_list_prop { #2 }
 
   % <data> から keys list を取得する
-  \__sgraph_get_keys_list:Nn  \l__sgraph_keys_list_seq { #2 }
+  \__sgraph_get_keys_list:Nn \l__sgraph_keys_list_seq { #2 }
 
   % データの処理
-  \__sgraph_process_data:Nn   \l__sgraph_ratio_prop { #2 }
+  \prop_clear:N \l__sgraph_ratio_prop
+  \__sgraph_process_data:NN \l__sgraph_ratio_prop \l__sgraph_value_list_prop
 
   % グラフの描画
   \str_if_eq:NNTF { #1 }{ band }
@@ -72,19 +72,18 @@
 \int_new:N  \l___sgraph_this_value_index_int
 \tl_new:N   \l___sgraph_this_value_ratio_tl
 \fp_new:N   \l___sgraph_this_value_ratio_fp
-\dim_new:N  \l___sgraph_this_graph_width_dim
-\dim_new:N  \l___sgraph_this_graph_width_fp
-\dim_new:N  \l___sgraph_this_start_position_dim
-\dim_zero:N \l___sgraph_this_start_position_dim
-\dim_new:N  \l___sgraph_this_end_position_dim
+\fp_new:N   \l___sgraph_this_graph_width_fp
+\fp_new:N   \l___sgraph_this_start_position_fp
+\fp_new:N   \l___sgraph_this_end_position_fp
 \cs_generate_variant:Nn \fp_set:Nn { NV }
 
 \cs_new:Npn \__sgraph_draw_graph:VVVVVVV #1 #2 #3 #4 #5 #6 #7
   {
+    % 値のリセット
+    \int_set:Nn \l___sgraph_this_value_index_int { 1 }
+    % key ごとに処理
     \seq_map_inline:Nn #1
       {
-        % index に +1
-        \int_add:Nn \l___sgraph_this_value_index_int { 1 }
         % グラフを描く幅を求める
         \prop_get:NnN #3 { ##1 } \l___sgraph_this_value_ratio_tl
         \fp_set:NV \l___sgraph_this_value_ratio_fp \l___sgraph_this_value_ratio_tl
@@ -92,13 +91,9 @@
           {
             \dim_to_fp:n { #4 } * \l___sgraph_this_value_ratio_fp
           }
-        \dim_set:Nn \l___sgraph_this_graph_width_dim
+        \fp_set:Nn \l___sgraph_this_end_position_fp
           {
-            \fp_to_dim:N \l___sgraph_this_graph_width_fp
-          }
-        \dim_set:Nn \l___sgraph_this_end_position_dim
-          {
-            \l___sgraph_this_start_position_dim + \l___sgraph_this_graph_width_dim
+            \l___sgraph_this_start_position_fp + \l___sgraph_this_graph_width_fp
           }
         % グラフを描画する
         \begin{ tikzpicture }
@@ -106,12 +101,14 @@
           \filldraw[
             \seq_item:Nn #6 { \l___sgraph_this_value_index_int }
           ]
-          ( \l___sgraph_this_start_position_dim, 0 )
-          rectangle( \l___sgraph_this_end_position_dim, #5 );
+          ( \fp_to_dim:N \l___sgraph_this_start_position_fp, 0 )
+          rectangle( \fp_to_dim:N \l___sgraph_this_end_position_fp, #5 );
           % ラベルの描画
         \end{ tikzpicture }
         % 値を更新
-        \dim_set_eq:NN  \l___sgraph_this_start_position_dim \l___sgraph_this_end_position_dim
+        \fp_set_eq:NN  \l___sgraph_this_start_position_fp \l___sgraph_this_end_position_fp
+        % index に +1
+        \int_add:Nn \l___sgraph_this_value_index_int { 1 }
       }
   }
 
@@ -126,6 +123,7 @@
 
 \cs_new:Npn \__sgraph_get_keys_list:Nn #1 #2
   {
+    \seq_clear:N \l___sgraph_keys_list_seq
     \seq_set_split:Nnn \l___sgraph_split_by_comma_seq { , }{ #2 }
     \seq_map_inline:Nn \l___sgraph_split_by_comma_seq
       {
@@ -139,27 +137,22 @@
 % [function] key=ratio を求める
 % # (return): prop_val
 % # (arg): key=val (prop)
-\prop_new:N \l__sgraph_original_data_prop
 \fp_new:N   \l__sgraph_data_sum_fp
-\prop_new:N \l__sgraph_ratio_data_prop
 \fp_new:N   \l__sgraph_values_ratio_fp
 \cs_generate_variant:Nn \prop_put:Nnn { NnV }
 
-\cs_new:Npn \__sgraph_process_data:Nn #1 #2
+\cs_new:Npn \__sgraph_process_data:NN #1 #2
   {
-    \prop_set_from_keyval:Nn \l__sgraph_original_data_prop { #2 }
-    % \l__sgraph_original_data_prop の value の合計値を求める
-    \prop_map_inline:Nn \l__sgraph_original_data_prop
+    \fp_zero:N \l__sgraph_data_sum_fp
+    % #2 の value の合計値を求める
+    \prop_map_inline:Nn #2
       {
         \fp_add:Nn \l__sgraph_data_sum_fp { ##2 }
       }
-    % \l__sgraph_original_data_prop の value の比率を求めて新しい prop を作る
-    \prop_map_inline:Nn \l__sgraph_original_data_prop
+    % #2 の value の比率を求めて #1 に入れる
+    \prop_map_inline:Nn #2
       {
         \fp_set:Nn    \l__sgraph_values_ratio_fp { ##2 / \l__sgraph_data_sum_fp }
-        \prop_put:NnV \l__sgraph_ratio_data_prop { ##1 } \l__sgraph_values_ratio_fp
+        \prop_put:NnV #1 { ##1 } \l__sgraph_values_ratio_fp
       }
-    \prop_show:N \l__sgraph_ratio_data_prop
-    % #1 に代入
-    \prop_set_eq:NN #1 \l__sgraph_ratio_data_prop
   }
