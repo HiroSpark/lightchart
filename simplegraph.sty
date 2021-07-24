@@ -31,10 +31,11 @@
 \NewDocumentCommand{ \makegraph }{ m m O{} }
   {
     % <options>
-    \keys_set:nn  { sgraph }{ #3 }
+    \keys_set:nn { sgraph }{ #3 }
     \seq_set_split:NnV \l__sgraph_colors_seq { , } \l__sgraph_colors_tl
     % <data>
     \prop_set_from_keyval:Nn \l__sgraph_value_list_prop { #2 }
+    \prop_clear:N \l__sgraph_keys_list_seq
     \__sgraph_get_keys_list:Nn \l__sgraph_keys_list_seq { #2 }
     \prop_clear:N \l__sgraph_ratio_prop
     \__sgraph_process_data:NN \l__sgraph_ratio_prop \l__sgraph_value_list_prop
@@ -131,7 +132,7 @@
 % #: height (fp)
 \cs_new:Npn \__sgraph_draw_rectangle:nnnn #1 #2 #3 #4
   {
-    \fcolorbox{ none }{ #2 }
+    \fcolorbox{ black }{ #2 }
       { \makebox( \fp_to_tl:n { #3 }, \fp_to_tl:n { #4 } ){} }
   }
 
@@ -139,26 +140,23 @@
 % # (return): keys list (seq)
 % # (arg): key=value list (tl)
 \seq_new:N  \l___sgraph_split_by_comma_seq
-\seq_new:N  \l___sgraph_keys_list_seq
 \seq_new:N  \l___sgraph_key_seq
 \seq_new:N  \l___sgraph_key_value_seq
 \cs_generate_variant:Nn \tl_put_right:Nn { NV }
 
 \cs_new:Npn \__sgraph_get_keys_list:Nn #1 #2
   {
-    \seq_clear:N \l___sgraph_keys_list_seq
     \seq_set_split:Nnn \l___sgraph_split_by_comma_seq { , }{ #2 }
     \seq_map_inline:Nn \l___sgraph_split_by_comma_seq
       {
         \seq_set_split:Nnn  \l___sgraph_key_value_seq { = }{ ##1 }
         \seq_pop_left:NN    \l___sgraph_key_value_seq \l___sgraph_key_seq
-        \seq_put_right:NV   \l___sgraph_keys_list_seq \l___sgraph_key_seq
+        \seq_put_right:NV   #1 \l___sgraph_key_seq
       }
-    \seq_set_eq:NN #1 \l___sgraph_keys_list_seq
   }
 
 % [function] key=ratio を求める
-% # (return): prop_val
+% # (return): key=ratio (prop)
 % # (arg): key=val (prop)
 \fp_new:N   \l__sgraph_data_sum_fp
 \fp_new:N   \l__sgraph_values_ratio_fp
@@ -167,12 +165,10 @@
 \cs_new:Npn \__sgraph_process_data:NN #1 #2
   {
     \fp_zero:N \l__sgraph_data_sum_fp
-    % #2 の value の合計値を求める
     \prop_map_inline:Nn #2
       {
         \fp_add:Nn \l__sgraph_data_sum_fp { ##2 }
       }
-    % #2 の value の比率を求めて #1 に入れる
     \prop_map_inline:Nn #2
       {
         \fp_set:Nn    \l__sgraph_values_ratio_fp { ##2 / \l__sgraph_data_sum_fp }
