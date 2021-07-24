@@ -55,7 +55,9 @@
       }{}
   }
 
-% [function] graph を描く
+% グラフを描く -------------------------------------------------------------------
+
+% [function] グラフを描く
 % #: keys list (seq)
 % #: key=value list (prop)
 % #: key=ratio list (prop)
@@ -78,9 +80,11 @@
     % 値のリセット
     \int_set:Nn \l___sgraph_this_value_index_int { 1 }
     \fp_zero:N  \l___sgraph_this_start_position_fp
-    % ラベルの y 座標の位置を求める
+    % ラベルの baseline （y 座標）の位置を求める
     \fp_set:Nn  \l___sgraph_label_position_y_fp
-      { \dim_to_fp:n { #5 } / 2 }
+      {
+        \dim_to_fp:n { #5 } / 2 - ( \f@size / 4 )
+      }
     \begin{ picture }(345,100)
       % key ごとに処理
       \seq_map_inline:Nn #1
@@ -135,6 +139,8 @@
     \fcolorbox{ black }{ #2 }
       { \makebox( \fp_to_tl:n { #3 }, \fp_to_tl:n { #4 } ){} }
   }
+
+% データの処理 -------------------------------------------------------------------
 
 % [function] keys list を求める
 % # (return): keys list (seq)
