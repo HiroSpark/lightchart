@@ -10,7 +10,7 @@
   height  .dim_set:N    = \l__sgraph_graph_height_dim,
   width   .dim_set:N    = \l__sgraph_graph_width_dim,
   colors  .tl_set:N     = \l__sgraph_colors_tl,
-  unit    .tl_set:N     = \l__sgraph_unit_tl
+  label_code .cs_set:Np = \__sgraph_make_label_code:n #1
 }
 
 % [command] デフォルトの設定をする
@@ -51,7 +51,7 @@
           \l__sgraph_graph_width_dim
           \l__sgraph_graph_height_dim
           \l__sgraph_colors_seq
-          \l__sgraph_unit_tl
+          \__sgraph_make_label_code:n
       }{}
   }
 
@@ -64,7 +64,7 @@
 % #: graph width (dim)
 % #: graph height (dim)
 % #: colors list (seq)
-% #: unit (tl)
+% #: label code (function)
 \int_new:N  \l___sgraph_this_value_index_int
 \tl_new:N   \l___sgraph_this_value_ratio_tl
 \fp_new:N   \l___sgraph_this_value_ratio_fp
@@ -118,7 +118,7 @@
           \put(
             \fp_to_tl:N \l___sgraph_this_label_position_x_fp,
             \fp_to_tl:N \l___sgraph_label_position_y_fp
-          ){ ##1 #7 }
+          ){ #7 ##1 }
           % 値を更新
           \fp_set_eq:NN
             \l___sgraph_this_start_position_fp
