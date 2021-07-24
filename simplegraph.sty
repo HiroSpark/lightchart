@@ -7,13 +7,13 @@
 
 % キーの定義
 \keys_define:nn { sgraph }{
-  height           .dim_set:N = \l__sgraph_graph_height_dim,
-  width            .dim_set:N = \l__sgraph_graph_width_dim,
-  space_before     .dim_set:N = \l__sgraph_space_before_dim,
-  space_after      .dim_set:N = \l__sgraph_space_after_dim,
-  background_color .tl_set:N  = \l__sgraph_background_color_tl,
-  border_color     .tl_set:N  = \l__sgraph_border_color_tl,
-  label_code       .cs_set:Np = \__sgraph_make_label_code:n #1
+  height            .dim_set:N  = \l__sgraph_graph_height_dim,
+  width             .dim_set:N  = \l__sgraph_graph_width_dim,
+  space_before      .dim_set:N  = \l__sgraph_space_before_dim,
+  space_after       .dim_set:N  = \l__sgraph_space_after_dim,
+  background_color  .tl_set:N   = \l__sgraph_background_color_tl,
+  border_color      .tl_set:N   = \l__sgraph_border_color_tl,
+  label_code        .cs_set:Np  = \__sgraph_make_label_code:n #1
 }
 
 % [command] デフォルトの設定をする
@@ -82,6 +82,7 @@
 \fp_new:N   \l___sgraph_next_start_position_fp
 \fp_new:N   \l___sgraph_this_label_position_x_fp
 \fp_new:N   \l___sgraph_label_position_y_fp
+\dim_new:N  \l___sgraph_this_label_width_dim
 \cs_generate_variant:Nn \fp_set:Nn { NV }
 
 \cs_new:Npn \__sgraph_draw_graph:VVVVVVVV #1 #2 #3 #4 #5 #6 #7 #8
@@ -124,10 +125,15 @@
                 { \dim_to_fp:n { #5 } }
             }
           % ラベルの描画
-          \put(
-            \fp_to_tl:N \l___sgraph_this_label_position_x_fp,
-            \fp_to_tl:N \l___sgraph_label_position_y_fp
-          ){ #8 ##1 }
+          \settowidth{ \l___sgraph_this_label_width_dim }{ #8 ##1 }
+          \dim_compare:nNnTF
+            { \l___sgraph_this_label_width_dim } < { \fp_to_dim:N \l___sgraph_this_graph_width_fp }
+            {
+              \put(
+                \fp_to_tl:N \l___sgraph_this_label_position_x_fp,
+                \fp_to_tl:N \l___sgraph_label_position_y_fp
+              ){ #8 ##1 }
+            }{}
           % 値を更新
           \fp_set_eq:NN
             \l___sgraph_this_start_position_fp
