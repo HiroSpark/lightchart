@@ -5,6 +5,9 @@
   {0.1}
   {}
 
+% ファイルの読み込み
+\file_input:n { macros.tex }
+
 % キーの定義
 \keys_define:nn { sgraph }{
   height            .dim_set:N  = \l__sgraph_graph_height_dim,
@@ -120,7 +123,9 @@
             {
               \__sgraph_draw_rectangle:Nnnn
                 #7
-                { \seq_item:Nn #6 { \l___sgraph_this_value_index_int } }
+                { \seq_item:Nn #6
+                  { \fp_to_int:n { \__macro_modulo:nn { \l___sgraph_this_value_index_int }{ \seq_count:N #6 } } }
+                }
                 { \l___sgraph_this_graph_width_fp }
                 { \dim_to_fp:n { #5 } }
             }

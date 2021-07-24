@@ -1,0 +1,10 @@
+\ProvidesExplFile{ macros }
+  {2020/09/06}
+  {}
+  {}
+
+% #: arg1 % arg2
+\cs_new:Npn \__macro_modulo:nn #1 #2
+  {
+    #1 - ( #2 * floor( #1/#2, 0 ) )
+  }
