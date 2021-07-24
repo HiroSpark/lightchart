@@ -7,11 +7,13 @@
 
 % キーの定義
 \keys_define:nn { sgraph }{
-  height  .dim_set:N    = \l__sgraph_graph_height_dim,
-  width   .dim_set:N    = \l__sgraph_graph_width_dim,
+  height           .dim_set:N = \l__sgraph_graph_height_dim,
+  width            .dim_set:N = \l__sgraph_graph_width_dim,
+  space_before     .dim_set:N = \l__sgraph_space_before_dim,
+  space_after      .dim_set:N = \l__sgraph_space_after_dim,
   background_color .tl_set:N  = \l__sgraph_background_color_tl,
-  border_color .tl_set:N      = \l__sgraph_border_color_tl,
-  label_code .cs_set:Np = \__sgraph_make_label_code:n #1
+  border_color     .tl_set:N  = \l__sgraph_border_color_tl,
+  label_code       .cs_set:Np = \__sgraph_make_label_code:n #1
 }
 
 % [command] デフォルトの設定をする
@@ -41,6 +43,8 @@
     \prop_clear:N \l__sgraph_ratio_prop
     \__sgraph_process_data:NN \l__sgraph_ratio_prop \l__sgraph_value_list_prop
 
+    % スペース
+    \vspace{ \l__sgraph_space_before_dim }
     % グラフの描画
     \str_if_eq:NNTF { #1 }{ band }
       {
@@ -55,6 +59,8 @@
           \l__sgraph_border_color_tl
           \__sgraph_make_label_code:n
       }{}
+    % スペース
+    \vspace{ \l__sgraph_space_after_dim }
   }
 
 % グラフを描く -------------------------------------------------------------------
@@ -88,7 +94,7 @@
       {
         \dim_to_fp:n { #5 } / 2 - ( \f@size / 4 )
       }
-    \begin{ picture }(345,100)
+    \begin{ picture }( \dim_to_decimal:n { #4 }, \dim_to_decimal:n { #5 } )
       % key ごとに処理
       \seq_map_inline:Nn #1
         {
@@ -140,7 +146,6 @@
 \cs_new:Npn \__sgraph_draw_rectangle:Nnnn #1 #2 #3 #4
   {
     \tl_if_empty:NTF #1 {
-      \tl_show:N #1
       \colorbox{ #2 }
       { \makebox( \fp_to_tl:n { #3 }, \fp_to_tl:n { #4 } ){} }
     }{
