@@ -124,7 +124,13 @@
               \__sgraph_draw_rectangle:Nnnn
                 #7
                 { \seq_item:Nn #6
-                  { \fp_to_int:n { \__macro_modulo:nn { \l___sgraph_this_value_index_int }{ \seq_count:N #6 } } }
+                    {
+                      \fp_to_int:n {
+                        \__macro_if_zero:nn {
+                          \__macro_modulo:nn { \l___sgraph_this_value_index_int }{ \seq_count:N #6 }
+                        }{ \seq_count:N #6 }
+                      }
+                    }
                 }
                 { \l___sgraph_this_graph_width_fp }
                 { \dim_to_fp:n { #5 } }

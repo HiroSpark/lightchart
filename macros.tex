@@ -6,5 +6,13 @@
 % #: arg1 % arg2
 \cs_new:Npn \__macro_modulo:nn #1 #2
   {
-    #1 - ( #2 * floor( #1/#2, 0 ) )
+    #1 - #2 * floor( #1/#2, 0 )
+  }
+
+% #: input
+% #: 最大値
+\cs_new:Npn \__macro_if_zero:nn #1 #2
+  {
+    \fp_compare:nNnTF { #1 } = { 0 }
+      { #2 }{ #1 }
   }
